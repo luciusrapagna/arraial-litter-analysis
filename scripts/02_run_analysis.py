@@ -353,6 +353,21 @@ def main() -> None:
         silhouette.loc[silhouette["silhouette_score"].idxmax(), "k"]
     )
     scores["cluster"] = fitted_clusters[best_k] + 1
+    beach_codes = {"Praia Brava": "BR", "Ilha do Pontal": "IP"}
+    season_codes = {
+        "Spring": "SPR",
+        "Summer": "SUM",
+        "Autumn": "AUT",
+        "Winter": "WIN",
+    }
+    scores["sample_id"] = [
+        f"{beach_codes.get(beach, str(beach)[:2].upper())}-"
+        f"{season_codes.get(season, str(season)[:3].upper())}-T{int(transect)}"
+        for beach, season, transect in zip(
+            scores["beach"], scores["season"], scores["transect"]
+        )
+    ]
+    scores["sample_label"] = [f"S{i:02d}" for i in range(1, len(scores) + 1)]
 
     loadings = pd.DataFrame(
         pca.components_[:2].T,
@@ -602,6 +617,83 @@ def main() -> None:
     colorbar.set_label("Contribution (%)", fontsize=10)
     colorbar.ax.tick_params(labelsize=9)
     save_figure(fig, "figure_03_hellinger_pca")
+
+    cluster_colors = {1: "#F8766D", 2: "#00BFC4", 3: "#7CAE00"}
+    cluster_markers = {1: "o", 2: "^", 3: "s"}
+    fig, ax = plt.subplots(figsize=(10, 8))
+    ax.set_facecolor("#F4F4F4")
+    ax.axhline(0, color="#555555", linewidth=0.9, linestyle="--", zorder=0)
+    ax.axvline(0, color="#555555", linewidth=0.9, linestyle="--", zorder=0)
+    for cluster_id in sorted(scores["cluster"].unique()):
+        subset = scores.loc[scores["cluster"] == cluster_id]
+        color = cluster_colors.get(cluster_id, "#666666")
+        marker = cluster_markers.get(cluster_id, "D")
+        add_confidence_ellipse(
+            ax,
+            subset["PC1"].to_numpy(),
+            subset["PC2"].to_numpy(),
+            color=color,
+            confidence=0.68,
+        )
+        ax.scatter(
+            subset["PC1"],
+            subset["PC2"],
+            s=54,
+            marker=marker,
+            facecolor=color,
+            edgecolor="black",
+            linewidth=0.55,
+            label=f"Cluster {cluster_id}",
+            zorder=3,
+        )
+        for _, row in subset.iterrows():
+            ax.annotate(
+                row["sample_label"],
+                (row["PC1"], row["PC2"]),
+                xytext=(4, 5),
+                textcoords="offset points",
+                color=color,
+                fontsize=8.5,
+                fontweight="medium",
+                zorder=4,
+            )
+        centroid_x = subset["PC1"].mean()
+        centroid_y = subset["PC2"].mean()
+        ax.scatter(
+            centroid_x,
+            centroid_y,
+            s=230,
+            marker=marker,
+            facecolor=color,
+            edgecolor="white",
+            linewidth=1.3,
+            zorder=5,
+        )
+        ax.scatter(
+            centroid_x,
+            centroid_y,
+            s=230,
+            marker=marker,
+            facecolor="none",
+            edgecolor="black",
+            linewidth=0.7,
+            zorder=6,
+        )
+    ax.set(
+        xlabel=f"PC1 ({100 * pca.explained_variance_ratio_[0]:.1f}%)",
+        ylabel=f"PC2 ({100 * pca.explained_variance_ratio_[1]:.1f}%)",
+    )
+    ax.grid(True, color="white", linewidth=1.15)
+    ax.set_axisbelow(True)
+    ax.legend(
+        title="K-means cluster",
+        loc="upper center",
+        bbox_to_anchor=(0.5, -0.12),
+        ncol=min(best_k, 3),
+        frameon=False,
+    )
+    fig.subplots_adjust(bottom=0.19)
+    save_figure(fig, "figure_06_kmeans_clusters")
 
     heatmap = (
         data.groupby(["beach", "season"], observed=True)[item_columns]

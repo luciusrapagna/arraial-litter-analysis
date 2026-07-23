@@ -59,6 +59,11 @@ The PCA figure follows a persistent publication style with group ellipses,
 zero-reference axes, variable vectors colored by contribution, and external
 legends. Running the complete workflow always regenerates this format.
 
+The K-means figure is likewise regenerated in English with cluster-specific
+colors and marker shapes, short sample labels, 68% confidence ellipses when
+estimable, and enlarged cluster centroids. The accompanying PCA-score table
+maps each short label to its beach, season, and transect.
+
 ## Reproducibility rule
 
 Never edit files in `data/raw/`. If the source workbook changes, replace it
