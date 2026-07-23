@@ -1,0 +1,7 @@
+.venv/
+.venv-broken/
+.analysis-env/
+__pycache__/
+*.py[cod]
+.DS_Store
+.vscode/settings.json

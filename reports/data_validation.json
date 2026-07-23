@@ -1,0 +1,45 @@
+{
+  "source_file": "data/raw/planilha_organizada.xlsx",
+  "source_sha256": "5dca4fb4c2758d9730059c6c8af2b890edae2cd6a6353d6e62e34f60d69294ff",
+  "worksheet": "Sheet1",
+  "rows": 24,
+  "columns_before_total": 15,
+  "duplicate_sampling_keys": 0,
+  "missing_values": {
+    "beach": 0,
+    "season": 0,
+    "transect": 0,
+    "plastic": 0,
+    "expanded_polystyrene": 0,
+    "rubber": 0,
+    "glass": 0,
+    "fragments": 0,
+    "fabric": 0,
+    "processed_wood": 0,
+    "unidentified": 0,
+    "personal_care": 0,
+    "aluminium": 0,
+    "aerosol": 0,
+    "rings_caps": 0
+  },
+  "negative_item_cells": 0,
+  "non_integer_item_cells": 0,
+  "missing_expected_groups": [],
+  "unexpected_groups": [],
+  "zero_total_transects": 1,
+  "totals_by_beach": {
+    "Ilha do Pontal": 244,
+    "Praia Brava": 2677
+  },
+  "totals_by_beach_and_season": {
+    "Ilha do Pontal | Autumn": 68,
+    "Ilha do Pontal | Spring": 48,
+    "Ilha do Pontal | Summer": 8,
+    "Ilha do Pontal | Winter": 120,
+    "Praia Brava | Autumn": 89,
+    "Praia Brava | Spring": 364,
+    "Praia Brava | Summer": 161,
+    "Praia Brava | Winter": 2063
+  },
+  "validation_status": "passed"
+}

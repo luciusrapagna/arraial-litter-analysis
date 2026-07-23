@@ -1,0 +1,179 @@
+{
+  "grand_total": 2921,
+  "beach_totals": {
+    "Praia Brava": 2677,
+    "Ilha do Pontal": 244
+  },
+  "pca_explained_variance_percent": {
+    "PC1": 41.18539892816846,
+    "PC2": 22.762285618478895,
+    "PC1_plus_PC2": 63.94768454664735
+  },
+  "best_k": 3,
+  "transect_area_m2": 50.0,
+  "cci": [
+    {
+      "beach": "Praia Brava",
+      "season": "Spring",
+      "plastic_items": 133,
+      "total_items": 364,
+      "n_transects": 3,
+      "sampled_area_m2": 150.0,
+      "total_density_items_m2": 2.4266666666666667,
+      "plastic_density_items_m2": 0.8866666666666667,
+      "cci": 17.733333333333334,
+      "cci_classification": "Dirty"
+    },
+    {
+      "beach": "Praia Brava",
+      "season": "Summer",
+      "plastic_items": 89,
+      "total_items": 161,
+      "n_transects": 3,
+      "sampled_area_m2": 150.0,
+      "total_density_items_m2": 1.0733333333333333,
+      "plastic_density_items_m2": 0.5933333333333334,
+      "cci": 11.866666666666667,
+      "cci_classification": "Dirty"
+    },
+    {
+      "beach": "Praia Brava",
+      "season": "Autumn",
+      "plastic_items": 63,
+      "total_items": 89,
+      "n_transects": 3,
+      "sampled_area_m2": 150.0,
+      "total_density_items_m2": 0.5933333333333334,
+      "plastic_density_items_m2": 0.42,
+      "cci": 8.4,
+      "cci_classification": "Moderately dirty"
+    },
+    {
+      "beach": "Praia Brava",
+      "season": "Winter",
+      "plastic_items": 614,
+      "total_items": 2063,
+      "n_transects": 3,
+      "sampled_area_m2": 150.0,
+      "total_density_items_m2": 13.753333333333334,
+      "plastic_density_items_m2": 4.093333333333334,
+      "cci": 81.86666666666667,
+      "cci_classification": "Extremely dirty"
+    },
+    {
+      "beach": "Ilha do Pontal",
+      "season": "Spring",
+      "plastic_items": 34,
+      "total_items": 48,
+      "n_transects": 3,
+      "sampled_area_m2": 150.0,
+      "total_density_items_m2": 0.32,
+      "plastic_density_items_m2": 0.22666666666666666,
+      "cci": 4.533333333333333,
+      "cci_classification": "Clean"
+    },
+    {
+      "beach": "Ilha do Pontal",
+      "season": "Summer",
+      "plastic_items": 5,
+      "total_items": 8,
+      "n_transects": 3,
+      "sampled_area_m2": 150.0,
+      "total_density_items_m2": 0.05333333333333334,
+      "plastic_density_items_m2": 0.03333333333333333,
+      "cci": 0.6666666666666666,
+      "cci_classification": "Very clean"
+    },
+    {
+      "beach": "Ilha do Pontal",
+      "season": "Autumn",
+      "plastic_items": 53,
+      "total_items": 68,
+      "n_transects": 3,
+      "sampled_area_m2": 150.0,
+      "total_density_items_m2": 0.4533333333333333,
+      "plastic_density_items_m2": 0.35333333333333333,
+      "cci": 7.066666666666666,
+      "cci_classification": "Moderately dirty"
+    },
+    {
+      "beach": "Ilha do Pontal",
+      "season": "Winter",
+      "plastic_items": 68,
+      "total_items": 120,
+      "n_transects": 3,
+      "sampled_area_m2": 150.0,
+      "total_density_items_m2": 0.8,
+      "plastic_density_items_m2": 0.4533333333333333,
+      "cci": 9.066666666666666,
+      "cci_classification": "Moderately dirty"
+    }
+  ],
+  "permanova": [
+    {
+      "factor": "beach",
+      "groups": 2,
+      "pseudo_f": 3.5475727951622207,
+      "p_value": 0.0085,
+      "permutations": 9999
+    },
+    {
+      "factor": "season",
+      "groups": 4,
+      "pseudo_f": 1.194700171012999,
+      "p_value": 0.2744,
+      "permutations": 9999
+    }
+  ],
+  "permdisp": [
+    {
+      "factor": "beach",
+      "groups": 2,
+      "f_value": 0.3090158013046687,
+      "p_value": 0.5623,
+      "permutations": 9999
+    },
+    {
+      "factor": "season",
+      "groups": 4,
+      "f_value": 0.8907204401977932,
+      "p_value": 0.3441,
+      "permutations": 9999
+    }
+  ],
+  "factorial_permanova": [
+    {
+      "term": "beach",
+      "df": 1,
+      "sum_of_squares": 0.8441541233138181,
+      "r_squared": 0.138861441891419,
+      "pseudo_f": 4.929152407806997,
+      "p_value": 0.002,
+      "permutations": 9999
+    },
+    {
+      "term": "season",
+      "df": 3,
+      "sum_of_squares": 0.9238488852422643,
+      "r_squared": 0.1519710497781098,
+      "pseudo_f": 1.7981676692187105,
+      "p_value": 0.0523,
+      "permutations": 9999
+    },
+    {
+      "term": "beach:season",
+      "df": 3,
+      "sum_of_squares": 1.570988656896532,
+      "r_squared": 0.2584240769154165,
+      "pseudo_f": 3.057752254363424,
+      "p_value": 0.0014,
+      "permutations": 9999
+    }
+  ],
+  "notes": [
+    "PCA used Hellinger-transformed relative category abundances.",
+    "PERMANOVA tests beach and season separately and is exploratory.",
+    "PERMDISP must be considered when interpreting PERMANOVA.",
+    "Density used 50 m² per transect and CCI used plastic-item density multiplied by 20."
+  ]
+}
