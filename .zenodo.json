@@ -1,0 +1,29 @@
+{
+  "title": "Marine litter abundance and composition in Arraial do Cabo, Brazil",
+  "description": "A reproducible research compendium containing the official workbook, standardized transect-level data, analysis scripts, publication-ready tables and figures, and statistical reports for marine-litter observations from Praia Brava and Ilha do Pontal, Arraial do Cabo, Rio de Janeiro, Brazil.",
+  "upload_type": "dataset",
+  "access_right": "open",
+  "creators": [
+    {
+      "name": "Rapagnã, Luciano",
+      "orcid": "0000-0002-9009-4463"
+    }
+  ],
+  "keywords": [
+    "marine litter",
+    "beach debris",
+    "Clean Coast Index",
+    "Bray-Curtis",
+    "PERMANOVA",
+    "coastal upwelling",
+    "Arraial do Cabo",
+    "Brazil"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/luciusrapagna/arraial-litter-analysis",
+      "relation": "isSupplementTo",
+      "scheme": "url"
+    }
+  ]
+}

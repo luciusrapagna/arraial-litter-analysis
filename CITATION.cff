@@ -1,0 +1,19 @@
+cff-version: 1.2.0
+message: "If you use this research compendium, please cite it using the metadata below."
+title: "Marine litter abundance and composition in Arraial do Cabo, Brazil"
+type: dataset
+authors:
+  - family-names: "Rapagnã"
+    given-names: "Luciano"
+    orcid: "https://orcid.org/0000-0002-9009-4463"
+repository-code: "https://github.com/luciusrapagna/arraial-litter-analysis"
+keywords:
+  - marine litter
+  - beach debris
+  - Clean Coast Index
+  - PERMANOVA
+  - coastal upwelling
+  - Arraial do Cabo
+  - Brazil
+version: 1.0.0
+date-released: 2026-07-23

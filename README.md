@@ -3,6 +3,9 @@
 Reproducible reanalysis of marine-litter data collected at Praia Brava and
 Ilha do Pontal, Arraial do Cabo, Rio de Janeiro, Brazil.
 
+Author: Luciano Rapagnã
+([ORCID 0000-0002-9009-4463](https://orcid.org/0000-0002-9009-4463)).
+
 ## Official data source
 
 The analysis uses `data/raw/planilha_organizada.xlsx` as its official and
@@ -52,6 +55,10 @@ In VS Code, the same commands are available through **Terminal → Run Task**:
 - PERMDISP diagnostics before interpreting PERMANOVA.
 - Publication figures exported as PNG and PDF.
 
+The PCA figure follows a persistent publication style with group ellipses,
+zero-reference axes, variable vectors colored by contribution, and external
+legends. Running the complete workflow always regenerates this format.
+
 ## Reproducibility rule
 
 Never edit files in `data/raw/`. If the source workbook changes, replace it
@@ -61,5 +68,10 @@ deliberately, record the new SHA-256 hash, and rerun the complete workflow.
 
 The complete workflow has been executed successfully from PowerShell. Density
 and CCI use 50 m² per transect, as documented in
-`docs/analysis_decisions.md`. Zenodo metadata will be finalized after the
-creator names, affiliations, and ORCID identifiers are confirmed.
+`docs/analysis_decisions.md`.
+
+## Citation and license
+
+Citation metadata are available in `CITATION.cff`, and Zenodo metadata are in
+`.zenodo.json`. The reuse license remains to be confirmed before the first
+Zenodo release; see `LICENSES.md`.

@@ -15,11 +15,14 @@ warnings.filterwarnings(
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.cm import ScalarMappable
+from matplotlib.colors import Normalize
+from matplotlib.patches import Ellipse
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from scipy.spatial.distance import pdist, squareform
-from scipy.stats import bootstrap
+from scipy.stats import bootstrap, chi2
 from skbio import DistanceMatrix
 from skbio.stats.distance import permanova, permdisp
 from sklearn.cluster import KMeans
@@ -229,6 +232,37 @@ def display_label(value: str) -> str:
     return value.replace("_", " ").title()
 
 
+def add_confidence_ellipse(
+    ax: plt.Axes,
+    x: np.ndarray,
+    y: np.ndarray,
+    color: str,
+    confidence: float = 0.68,
+) -> None:
+    if len(x) < 3:
+        return
+    covariance = np.cov(x, y)
+    eigenvalues, eigenvectors = np.linalg.eigh(covariance)
+    order = np.argsort(eigenvalues)[::-1]
+    eigenvalues = eigenvalues[order]
+    eigenvectors = eigenvectors[:, order]
+    angle = np.degrees(np.arctan2(eigenvectors[1, 0], eigenvectors[0, 0]))
+    radius = np.sqrt(chi2.ppf(confidence, df=2))
+    width, height = 2 * radius * np.sqrt(np.maximum(eigenvalues, 0))
+    ellipse = Ellipse(
+        xy=(float(np.mean(x)), float(np.mean(y))),
+        width=float(width),
+        height=float(height),
+        angle=float(angle),
+        facecolor=color,
+        edgecolor=color,
+        linewidth=1.2,
+        alpha=0.14,
+        zorder=1,
+    )
+    ax.add_patch(ellipse)
+
+
 def main() -> None:
     TABLE_DIR.mkdir(parents=True, exist_ok=True)
     FIGURE_DIR.mkdir(parents=True, exist_ok=True)
@@ -327,6 +361,10 @@ def main() -> None:
     ).rename_axis("category").reset_index()
     loadings["PC1_abs_loading"] = loadings["PC1_loading"].abs()
     loadings["PC2_abs_loading"] = loadings["PC2_loading"].abs()
+    loading_strength = (
+        loadings["PC1_loading"] ** 2 + loadings["PC2_loading"] ** 2
+    )
+    loadings["contribution_percent"] = 100 * loading_strength / loading_strength.sum()
     scores.to_csv(TABLE_DIR / "table_04_pca_scores_and_clusters.csv", index=False)
     loadings.to_csv(TABLE_DIR / "table_05_pca_loadings.csv", index=False)
     silhouette.to_csv(TABLE_DIR / "table_06_cluster_selection.csv", index=False)
@@ -470,50 +508,99 @@ def main() -> None:
             )
     save_figure(fig, "figure_02_composition_by_beach_and_season")
 
-    fig, ax = plt.subplots(figsize=(10, 7))
+    fig, ax = plt.subplots(figsize=(11, 7.5))
+    fig.subplots_adjust(right=0.78)
     for beach in BEACH_ORDER:
         subset = scores[scores["beach"] == beach]
+        add_confidence_ellipse(
+            ax,
+            subset["PC1"].to_numpy(),
+            subset["PC2"].to_numpy(),
+            PALETTE[beach],
+        )
         ax.scatter(
             subset["PC1"],
             subset["PC2"],
-            s=95,
+            s=72,
             c=PALETTE[beach],
             label=beach,
-            alpha=0.85,
-            edgecolor="white",
-            linewidth=0.7,
+            alpha=0.95,
+            edgecolor="black",
+            linewidth=0.6,
+            zorder=3,
         )
-    top_loading_categories = set(
-        loadings.nlargest(5, "PC1_abs_loading")["category"]
-    ) | set(loadings.nlargest(5, "PC2_abs_loading")["category"])
-    scale = 0.85 * max(
+    plotted_loadings = loadings.nlargest(5, "contribution_percent").copy()
+    scale = 0.72 * max(
         np.ptp(scores["PC1"]) / max(np.ptp(loadings["PC1_loading"]), 1e-9),
         np.ptp(scores["PC2"]) / max(np.ptp(loadings["PC2_loading"]), 1e-9),
     )
-    for _, row in loadings[
-        loadings["category"].isin(top_loading_categories)
-    ].iterrows():
+    contribution_norm = Normalize(
+        vmin=float(plotted_loadings["contribution_percent"].min()),
+        vmax=float(plotted_loadings["contribution_percent"].max()),
+    )
+    contribution_cmap = plt.get_cmap("RdYlBu")
+    for _, row in plotted_loadings.iterrows():
         x = row["PC1_loading"] * scale
         y = row["PC2_loading"] * scale
-        ax.arrow(
-            0,
-            0,
-            x,
-            y,
-            color="#333333",
-            alpha=0.65,
-            width=0.001,
-            head_width=0.015,
-            length_includes_head=True,
+        arrow_color = contribution_cmap(
+            contribution_norm(row["contribution_percent"])
         )
-        ax.text(x * 1.06, y * 1.06, display_label(row["category"]), fontsize=9)
-    ax.axhline(0, color="#999999", linewidth=0.8)
-    ax.axvline(0, color="#999999", linewidth=0.8)
+        ax.annotate(
+            "",
+            xy=(x, y),
+            xytext=(0, 0),
+            arrowprops={
+                "arrowstyle": "->",
+                "color": arrow_color,
+                "linewidth": 1.4,
+                "alpha": 0.9,
+            },
+            zorder=4,
+        )
+        ax.annotate(
+            display_label(row["category"]),
+            xy=(x, y),
+            xytext=(7 if x >= 0 else -7, 6 if y >= 0 else -6),
+            textcoords="offset points",
+            color=arrow_color,
+            fontsize=10,
+            fontweight="normal",
+            ha="left" if x >= 0 else "right",
+            va="bottom" if y >= 0 else "top",
+            zorder=5,
+        )
+    ax.axhline(0, color="black", linewidth=1.0, linestyle=(0, (5, 5)))
+    ax.axvline(0, color="black", linewidth=1.0, linestyle=(0, (5, 5)))
     ax.set(
         xlabel=f"PC1 ({100 * pca.explained_variance_ratio_[0]:.1f}%)",
         ylabel=f"PC2 ({100 * pca.explained_variance_ratio_[1]:.1f}%)",
     )
-    ax.legend(title="Beach")
+    ax.grid(True, which="major", color="#E3E3E3", linewidth=0.9)
+    ax.set_axisbelow(True)
+    vector_x = plotted_loadings["PC1_loading"].to_numpy() * scale
+    vector_y = plotted_loadings["PC2_loading"].to_numpy() * scale
+    combined_x = np.concatenate([scores["PC1"].to_numpy(), vector_x, [0]])
+    combined_y = np.concatenate([scores["PC2"].to_numpy(), vector_y, [0]])
+    x_padding = max(np.ptp(combined_x) * 0.12, 0.05)
+    y_padding = max(np.ptp(combined_y) * 0.12, 0.05)
+    ax.set_xlim(combined_x.min() - x_padding, combined_x.max() + x_padding)
+    ax.set_ylim(combined_y.min() - y_padding, combined_y.max() + y_padding)
+    ax.legend(
+        title="Beach",
+        bbox_to_anchor=(1.01, 1.0),
+        loc="upper left",
+        frameon=False,
+        fontsize=10,
+        title_fontsize=11,
+    )
+    contribution_map = ScalarMappable(
+        norm=contribution_norm, cmap=contribution_cmap
+    )
+    contribution_map.set_array([])
+    colorbar_axis = fig.add_axes([0.835, 0.18, 0.025, 0.32])
+    colorbar = fig.colorbar(contribution_map, cax=colorbar_axis)
+    colorbar.set_label("Contribution (%)", fontsize=10)
+    colorbar.ax.tick_params(labelsize=9)
     save_figure(fig, "figure_03_hellinger_pca")
 
     heatmap = (

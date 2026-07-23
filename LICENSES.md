@@ -1,13 +1,11 @@
-# Licensing decision required
+# Licensing decision pending
 
-No license has been assigned yet.
+Copyright © 2026 Luciano Rapagnã. All rights reserved until an explicit reuse
+license is selected.
 
-Before public release, the data owners and authors should choose licenses
-explicitly. A common arrangement for a research compendium is:
+The repository may be viewed and downloaded, but no permission to redistribute,
+modify, or reuse its contents is granted by this notice. A reuse license will
+be added before the first Zenodo release.
 
-- Source code: MIT License.
-- Data, tables, figures, and documentation: Creative Commons Attribution 4.0
-  International (CC BY 4.0).
-
-Until the authors approve a license, all rights remain reserved and the
-repository should not be treated as openly reusable.
+The legacy notebook is retained for provenance. Third-party names, trademarks,
+and cited works remain subject to their respective rights.
