@@ -1,11 +1,13 @@
-# Licensing decision pending
+# License
 
-Copyright © 2026 Luciano Rapagnã. All rights reserved until an explicit reuse
-license is selected.
+Copyright © 2026 Luciano Rapagnã.
 
-The repository may be viewed and downloaded, but no permission to redistribute,
-modify, or reuse its contents is granted by this notice. A reuse license will
-be added before the first Zenodo release.
+This research compendium is licensed under the Creative Commons Attribution
+4.0 International License (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+You may share and adapt the material for any purpose, provided appropriate
+credit is given, a link to the license is supplied, and changes are indicated.
 
 The legacy notebook is retained for provenance. Third-party names, trademarks,
 and cited works remain subject to their respective rights.

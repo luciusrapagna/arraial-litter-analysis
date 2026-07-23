@@ -78,5 +78,13 @@ and CCI use 50 m² per transect, as documented in
 ## Citation and license
 
 Citation metadata are available in `CITATION.cff`, and Zenodo metadata are in
-`.zenodo.json`. The reuse license remains to be confirmed before the first
-Zenodo release; see `LICENSES.md`.
+`.zenodo.json`. The archived dataset is available at
+[https://doi.org/10.5281/zenodo.21511162](https://doi.org/10.5281/zenodo.21511162).
+
+Suggested citation:
+
+> Rapagnã, L. (2026). *Marine litter abundance and composition in Arraial do
+> Cabo, Brazil* (Version 1.0.0) [Dataset]. Zenodo.
+> https://doi.org/10.5281/zenodo.21511162
+
+The repository is released under CC BY 4.0; see `LICENSES.md`.

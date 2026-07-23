@@ -3,6 +3,7 @@
   "description": "A reproducible research compendium containing the official workbook, standardized transect-level data, analysis scripts, publication-ready tables and figures, and statistical reports for marine-litter observations from Praia Brava and Ilha do Pontal, Arraial do Cabo, Rio de Janeiro, Brazil.",
   "upload_type": "dataset",
   "access_right": "open",
+  "license": "cc-by-4.0",
   "creators": [
     {
       "name": "Rapagnã, Luciano",
@@ -20,6 +21,11 @@
     "Brazil"
   ],
   "related_identifiers": [
+    {
+      "identifier": "10.5281/zenodo.21511162",
+      "relation": "isIdenticalTo",
+      "scheme": "doi"
+    },
     {
       "identifier": "https://github.com/luciusrapagna/arraial-litter-analysis",
       "relation": "isSupplementTo",
