@@ -14,7 +14,7 @@ SOURCE = ROOT / "data" / "raw" / "planilha_organizada.xlsx"
 PROCESSED = ROOT / "data" / "processed" / "marine_litter_tidy.csv"
 REPORT = ROOT / "reports" / "data_validation.json"
 
-EXPECTED_SHA256 = "5dca4fb4c2758d9730059c6c8af2b890edae2cd6a6353d6e62e34f60d69294ff"
+EXPECTED_SHA256 = "783cc7a030f7b789e9218cb7a9e719b2e91b472ca8956a461b89b008f0e5f87f"
 ID_COLUMNS = ["beach", "season", "transect"]
 
 
@@ -32,7 +32,7 @@ COLUMN_MAP = {
     "Isopor": "expanded_polystyrene",
     "Borracha": "rubber",
     "Vidro": "glass",
-    "Fragmentos": "fragments",
+    "Fragmentos": "rubber_fragments",
     "Tecidos": "fabric",
     "Madeira": "processed_wood",
     "Não identificados": "unidentified",
@@ -40,6 +40,7 @@ COLUMN_MAP = {
     "Alumínio": "aluminium",
     "Aerosol": "aerosol",
     "Anel": "rings_caps",
+    "Fragmentos metal": "metal_fragments",
 }
 
 VALUE_MAP = {

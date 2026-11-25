@@ -1,0 +1,3 @@
+term,df,residual_df,sum_of_squares,partial_r_squared,overall_r_squared,pseudo_f,p_value,exact_permutations,permutation_scheme
+beach,1,3,0.3773510299785887,0.46995818916390025,0.2264348993314634,2.659930855771045,0.125,16,Exact beach-label swaps within four campaign blocks
+campaign,3,3,0.8635419833060836,0.669860566006648,0.5181807561768155,2.0290231854584726,0.08333333333333333,576,Exact campaign-label permutations independently within beaches

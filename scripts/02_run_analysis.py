@@ -23,8 +23,6 @@ import pandas as pd
 import seaborn as sns
 from scipy.spatial.distance import pdist, squareform
 from scipy.stats import bootstrap, chi2
-from skbio import DistanceMatrix
-from skbio.stats.distance import permanova, permdisp
 from sklearn.cluster import KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import silhouette_score
@@ -41,7 +39,6 @@ SEASON_ORDER = ["Spring", "Summer", "Autumn", "Winter"]
 BEACH_ORDER = ["Praia Brava", "Ilha do Pontal"]
 PALETTE = {"Praia Brava": "#0072B2", "Ilha do Pontal": "#D55E00"}
 RANDOM_SEED = 20260723
-PERMUTATIONS = 9999
 TRANSECT_AREA_M2 = 50.0
 GROUP_AREA_M2 = 150.0
 
@@ -88,44 +85,6 @@ def descriptive_table(data: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(records)
 
 
-def permanova_result(
-    distance_matrix: DistanceMatrix, grouping: pd.Series
-) -> dict[str, float | int | str]:
-    result = permanova(
-        distance_matrix,
-        grouping=grouping,
-        permutations=PERMUTATIONS,
-        seed=RANDOM_SEED,
-    )
-    return {
-        "factor": str(grouping.name),
-        "groups": int(result["number of groups"]),
-        "pseudo_f": float(result["test statistic"]),
-        "p_value": float(result["p-value"]),
-        "permutations": int(result["number of permutations"]),
-    }
-
-
-def permdisp_result(
-    distance_matrix: DistanceMatrix, grouping: pd.Series
-) -> dict[str, float | int | str]:
-    result = permdisp(
-        distance_matrix,
-        grouping=grouping,
-        permutations=PERMUTATIONS,
-        test="median",
-        seed=RANDOM_SEED,
-        warn_neg_eigval=False,
-    )
-    return {
-        "factor": str(grouping.name),
-        "groups": int(result["number of groups"]),
-        "f_value": float(result["test statistic"]),
-        "p_value": float(result["p-value"]),
-        "permutations": int(result["number of permutations"]),
-    }
-
-
 def cci_classification(value: float) -> str:
     if value <= 2:
         return "Very clean"
@@ -138,75 +97,98 @@ def cci_classification(value: float) -> str:
     return "Extremely dirty"
 
 
-def factorial_permanova(
-    distance: np.ndarray, data: pd.DataFrame
-) -> pd.DataFrame:
-    n = len(data)
-    beach = pd.get_dummies(data["beach"], drop_first=True, dtype=float).to_numpy()
-    season = pd.get_dummies(data["season"], drop_first=True, dtype=float).to_numpy()
-    interaction = beach * season
-    intercept = np.ones((n, 1))
-    blocks = [
-        ("beach", beach),
-        ("season", season),
-        ("beach:season", interaction),
-    ]
-    centering = np.eye(n) - np.ones((n, n)) / n
-    gower = -0.5 * centering @ (distance**2) @ centering
+def partial_pseudo_f(
+    gower: np.ndarray, reduced: np.ndarray, full: np.ndarray
+) -> tuple[float, float, float, int, int]:
+    """Return partial distance-based pseudo-F and its components."""
+    n = len(gower)
 
     def hat(matrix: np.ndarray) -> np.ndarray:
         return matrix @ np.linalg.pinv(matrix)
 
-    matrices = [intercept]
-    projectors = [hat(intercept)]
-    for _, block in blocks:
-        matrices.append(np.column_stack([matrices[-1], block]))
-        projectors.append(hat(matrices[-1]))
+    reduced_hat = hat(reduced)
+    full_hat = hat(full)
+    term_df = int(np.linalg.matrix_rank(full) - np.linalg.matrix_rank(reduced))
+    residual_df = int(n - np.linalg.matrix_rank(full))
+    term_ss = float(np.trace((full_hat - reduced_hat) @ gower))
+    residual_ss = float(np.trace((np.eye(n) - full_hat) @ gower))
+    pseudo_f = (term_ss / term_df) / (residual_ss / residual_df)
+    return pseudo_f, term_ss, residual_ss, term_df, residual_df
 
-    full_projector = projectors[-1]
-    residual_projector = np.eye(n) - full_projector
-    residual_df = n - np.linalg.matrix_rank(matrices[-1])
+
+def exact_aggregated_permanova(
+    distance: np.ndarray, aggregated: pd.DataFrame
+) -> pd.DataFrame:
+    """Exact restricted tests on eight independent beach-campaign units."""
+    from itertools import permutations, product
+
+    n = len(aggregated)
+    centering = np.eye(n) - np.ones((n, n)) / n
+    gower = -0.5 * centering @ (distance**2) @ centering
     total_ss = float(np.trace(centering @ gower))
+    intercept = np.ones((n, 1))
 
-    observed: list[dict[str, float | int | str]] = []
-    term_matrices: list[np.ndarray] = []
-    for index, (name, _) in enumerate(blocks, start=1):
-        term_matrix = projectors[index] - projectors[index - 1]
-        term_matrices.append(term_matrix)
-        term_df = int(
-            np.linalg.matrix_rank(matrices[index])
-            - np.linalg.matrix_rank(matrices[index - 1])
-        )
-        term_ss = float(np.trace(term_matrix @ gower))
-        residual_ss = float(np.trace(residual_projector @ gower))
-        pseudo_f = (term_ss / term_df) / (residual_ss / residual_df)
-        observed.append(
+    def design(beach_values: np.ndarray, season_values: np.ndarray):
+        beach = pd.get_dummies(beach_values, drop_first=True, dtype=float).to_numpy()
+        season = pd.get_dummies(season_values, drop_first=True, dtype=float).to_numpy()
+        return beach, season
+
+    observed_beach = aggregated["beach"].astype(str).to_numpy()
+    observed_season = aggregated["season"].astype(str).to_numpy()
+    beach_x, season_x = design(observed_beach, observed_season)
+
+    beach_reduced = np.column_stack([intercept, season_x])
+    beach_full = np.column_stack([beach_reduced, beach_x])
+    beach_stats = partial_pseudo_f(gower, beach_reduced, beach_full)
+    beach_null: list[float] = []
+    for swaps in product([False, True], repeat=len(SEASON_ORDER)):
+        permuted_beach = observed_beach.copy()
+        for season, swap in zip(SEASON_ORDER, swaps):
+            if swap:
+                idx = np.flatnonzero(observed_season == season)
+                permuted_beach[idx] = permuted_beach[idx[::-1]]
+        perm_beach_x, _ = design(permuted_beach, observed_season)
+        perm_full = np.column_stack([beach_reduced, perm_beach_x])
+        beach_null.append(partial_pseudo_f(gower, beach_reduced, perm_full)[0])
+
+    season_reduced = np.column_stack([intercept, beach_x])
+    season_full = np.column_stack([season_reduced, season_x])
+    season_stats = partial_pseudo_f(gower, season_reduced, season_full)
+    season_null: list[float] = []
+    beach_indices = [
+        np.flatnonzero(observed_beach == beach) for beach in BEACH_ORDER
+    ]
+    for left, right in product(permutations(SEASON_ORDER), repeat=2):
+        permuted_season = observed_season.copy()
+        permuted_season[beach_indices[0]] = left
+        permuted_season[beach_indices[1]] = right
+        _, perm_season_x = design(observed_beach, permuted_season)
+        perm_full = np.column_stack([season_reduced, perm_season_x])
+        season_null.append(partial_pseudo_f(gower, season_reduced, perm_full)[0])
+
+    records = []
+    for term, stats, null, scheme in (
+        ("beach", beach_stats, beach_null,
+         "Exact beach-label swaps within four campaign blocks"),
+        ("campaign", season_stats, season_null,
+         "Exact campaign-label permutations independently within beaches"),
+    ):
+        pseudo_f, term_ss, residual_ss, term_df, residual_df = stats
+        records.append(
             {
-                "term": name,
+                "term": term,
                 "df": term_df,
+                "residual_df": residual_df,
                 "sum_of_squares": term_ss,
-                "r_squared": term_ss / total_ss,
+                "partial_r_squared": term_ss / (term_ss + residual_ss),
+                "overall_r_squared": term_ss / total_ss,
                 "pseudo_f": pseudo_f,
-                "p_value": 0.0,
-                "permutations": PERMUTATIONS,
+                "p_value": sum(value >= pseudo_f - 1e-12 for value in null) / len(null),
+                "exact_permutations": len(null),
+                "permutation_scheme": scheme,
             }
         )
-
-    rng = np.random.default_rng(RANDOM_SEED)
-    exceedances = np.zeros(len(blocks), dtype=int)
-    observed_f = np.array([row["pseudo_f"] for row in observed])
-    for _ in range(PERMUTATIONS):
-        order = rng.permutation(n)
-        permuted = gower[np.ix_(order, order)]
-        residual_ss = float(np.trace(residual_projector @ permuted))
-        for index, (term_matrix, row) in enumerate(zip(term_matrices, observed)):
-            term_ss = float(np.trace(term_matrix @ permuted))
-            permuted_f = (term_ss / row["df"]) / (residual_ss / residual_df)
-            exceedances[index] += permuted_f >= observed_f[index] - 1e-12
-
-    for index, row in enumerate(observed):
-        row["p_value"] = float((exceedances[index] + 1) / (PERMUTATIONS + 1))
-    return pd.DataFrame(observed)
+    return pd.DataFrame(records)
 
 
 def save_figure(fig: plt.Figure, stem: str) -> None:
@@ -384,29 +366,25 @@ def main() -> None:
     loadings.to_csv(TABLE_DIR / "table_05_pca_loadings.csv", index=False)
     silhouette.to_csv(TABLE_DIR / "table_06_cluster_selection.csv", index=False)
 
-    bray = squareform(pdist(matrix, metric="braycurtis"))
-    ids = [f"S{i + 1:02d}" for i in range(len(data))]
-    distance_matrix = DistanceMatrix(bray, ids=ids)
-    beach_group = pd.Series(data["beach"].astype(str).to_numpy(), index=ids, name="beach")
-    season_group = pd.Series(
-        data["season"].astype(str).to_numpy(), index=ids, name="season"
+    aggregated = (
+        data.groupby(["beach", "season"], observed=True, sort=False)[item_columns]
+        .sum()
+        .reset_index()
     )
-    permanova_results = [
-        permanova_result(distance_matrix, beach_group),
-        permanova_result(distance_matrix, season_group),
-    ]
-    permdisp_results = [
-        permdisp_result(distance_matrix, beach_group),
-        permdisp_result(distance_matrix, season_group),
-    ]
-    factorial = factorial_permanova(bray, data)
-    pd.DataFrame(permanova_results).to_csv(
-        TABLE_DIR / "table_07_one_factor_permanova.csv", index=False
-    )
-    pd.DataFrame(permdisp_results).to_csv(
-        TABLE_DIR / "table_08_permdisp.csv", index=False
-    )
-    factorial.to_csv(TABLE_DIR / "table_09_factorial_permanova.csv", index=False)
+    aggregated["n_transects"] = 3
+    aggregated["sampled_area_m2"] = GROUP_AREA_M2
+    aggregated["total_items"] = aggregated[item_columns].sum(axis=1)
+    aggregated["unit_id"] = [f"U{i:02d}" for i in range(1, len(aggregated) + 1)]
+    aggregated_matrix = aggregated[item_columns].to_numpy(dtype=float)
+    aggregated_bray = squareform(pdist(aggregated_matrix, metric="braycurtis"))
+    exact_permanova = exact_aggregated_permanova(aggregated_bray, aggregated)
+    aggregated.to_csv(TABLE_DIR / "table_07_aggregated_units.csv", index=False)
+    exact_permanova.to_csv(TABLE_DIR / "table_08_exact_permanova.csv", index=False)
+    pd.DataFrame([{
+        "term": "beach:campaign",
+        "status": "not tested",
+        "reason": "One observation per cell gives zero residual degrees of freedom",
+    }]).to_csv(TABLE_DIR / "table_09_permutation_scope.csv", index=False)
 
     sns.set_theme(style="whitegrid", context="talk")
 
@@ -701,7 +679,9 @@ def main() -> None:
         .apply(np.log1p)
     )
     heatmap.index = [
-        (display_label(beach), str(season)) for beach, season in heatmap.index
+        {"Praia Brava": "Praia\nBrava", "Ilha do Pontal": "Ilha do\nPontal"}[beach]
+        + "\n" + str(season)
+        for beach, season in heatmap.index
     ]
     heatmap.columns = [display_label(column) for column in heatmap.columns]
     fig, ax = plt.subplots(figsize=(13, 7))
@@ -713,7 +693,8 @@ def main() -> None:
         cbar_kws={"label": "log(1 + mean item count)"},
         ax=ax,
     )
-    ax.set(xlabel="Beach × season", ylabel="Item category")
+    ax.set(xlabel="Beach and campaign", ylabel="Item category")
+    ax.tick_params(axis="x", rotation=0)
     save_figure(fig, "figure_04_category_heatmap")
 
     fig, ax = plt.subplots(figsize=(11, 6.5))
@@ -726,7 +707,7 @@ def main() -> None:
         palette=PALETTE,
         ax=ax,
     )
-    for boundary, label in [(2, "Very clean"), (5, "Clean"), (10, "Moderate"), (20, "Dirty")]:
+    for boundary, label in [(2, "Clean (2–5)"), (5, "Moderately dirty (5–10)"), (10, "Dirty (10–20)"), (20, "Extremely dirty (>20)")]:
         ax.axhline(boundary, color="#555555", linestyle="--", linewidth=0.8)
         ax.text(3.48, boundary * 1.03, label, ha="right", va="bottom", fontsize=9)
     ax.set_yscale("log")
@@ -747,13 +728,13 @@ def main() -> None:
         "cci": cci.assign(
             beach=cci["beach"].astype(str), season=cci["season"].astype(str)
         ).to_dict(orient="records"),
-        "permanova": permanova_results,
-        "permdisp": permdisp_results,
-        "factorial_permanova": factorial.to_dict(orient="records"),
+        "aggregated_permanova": exact_permanova.to_dict(orient="records"),
         "notes": [
             "PCA used Hellinger-transformed relative category abundances.",
-            "PERMANOVA tests beach and season separately and is exploratory.",
-            "PERMDISP must be considered when interpreting PERMANOVA.",
+            "PERMANOVA used eight aggregated beach-campaign units.",
+            "Beach labels were swapped exactly within campaign blocks.",
+            "Campaign inference is descriptive because only one annual cycle was sampled.",
+            "The beach-by-campaign interaction was not tested because the aggregated model has zero residual degrees of freedom.",
             "Density used 50 m² per transect and CCI used plastic-item density multiplied by 20.",
         ],
     }
@@ -761,8 +742,8 @@ def main() -> None:
         json.dumps(results, indent=2, ensure_ascii=False), encoding="utf-8"
     )
 
-    perm_beach, perm_season = permanova_results
-    disp_beach, disp_season = permdisp_results
+    perm_beach = exact_permanova.loc[exact_permanova["term"] == "beach"].iloc[0]
+    perm_campaign = exact_permanova.loc[exact_permanova["term"] == "campaign"].iloc[0]
     report = f"""# Statistical report
 
 ## Data basis
@@ -796,30 +777,30 @@ K-means solutions from k = 2 to 6 were compared with the silhouette score. The
 highest score selected k = {best_k}. Clustering is treated as exploratory and
 not as evidence of discrete ecological populations.
 
-Separate Bray–Curtis PERMANOVA tests found:
+The three transects in each beach-campaign cell were aggregated before the
+inferential analysis, producing eight independent 150-m² units. Exact restricted
+Bray–Curtis PERMANOVA tests found:
 
-- Beach: pseudo-F = {perm_beach['pseudo_f']:.3f}, p = {perm_beach['p_value']:.4f}.
-- Season: pseudo-F = {perm_season['pseudo_f']:.3f}, p = {perm_season['p_value']:.4f}.
+- Beach, controlling for campaign: pseudo-F = {perm_beach['pseudo_f']:.3f},
+  partial R² = {perm_beach['partial_r_squared']:.3f}, p = {perm_beach['p_value']:.4f}
+  ({int(perm_beach['exact_permutations'])} exact within-campaign allocations).
+- Campaign, controlling for beach: pseudo-F = {perm_campaign['pseudo_f']:.3f},
+  partial R² = {perm_campaign['partial_r_squared']:.3f}, p = {perm_campaign['p_value']:.4f}
+  ({int(perm_campaign['exact_permutations'])} exact within-beach allocations).
 
-The sequential balanced factorial PERMANOVA produced:
-
-{factorial.to_string(index=False)}
-
-Dispersion diagnostics (PERMDISP) found:
-
-- Beach: F = {disp_beach['f_value']:.3f}, p = {disp_beach['p_value']:.4f}.
-- Season: F = {disp_season['f_value']:.3f}, p = {disp_season['p_value']:.4f}.
-
-PERMANOVA results must be interpreted together with PERMDISP because a
-significant dispersion test can indicate that differences in within-group
-variability contribute to the PERMANOVA result.
+The beach × campaign interaction was not tested because the aggregated design
+has one observation per cell and therefore zero residual degrees of freedom.
+The campaign result describes these four dates and is not evidence of a
+general seasonal effect.
 
 ## Important limitations
 
 - Only one annual cycle was sampled, so season cannot be cleanly separated from
   unique sampling dates or year-specific events.
-- The three transects within each beach × season cell provide local replication,
-  but their spatial independence must be confirmed.
+- The three transects within each beach × campaign cell are spatial subsamples
+  and were aggregated before PERMANOVA.
+- The beach test has only 16 exact allocations, so its attainable p-values are
+  coarse and inference relies primarily on effect size and ordination.
 - One transect contains zero recorded items. It is retained in descriptive and
   multivariate analyses and explicitly represented by a zero Hellinger vector.
 - Density and CCI use 50 m² per transect, based on the original dissertation

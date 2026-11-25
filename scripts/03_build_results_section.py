@@ -125,9 +125,8 @@ def main():
     scores = pd.read_csv(TABLES / "table_04_pca_scores_and_clusters.csv")
     loadings = pd.read_csv(TABLES / "table_05_pca_loadings.csv")
     silhouette = pd.read_csv(TABLES / "table_06_cluster_selection.csv")
-    one_factor = pd.read_csv(TABLES / "table_07_one_factor_permanova.csv")
-    dispersion = pd.read_csv(TABLES / "table_08_permdisp.csv")
-    factorial = pd.read_csv(TABLES / "table_09_factorial_permanova.csv")
+    aggregated_units = pd.read_csv(TABLES / "table_07_aggregated_units.csv")
+    exact_permanova = pd.read_csv(TABLES / "table_08_exact_permanova.csv")
 
     doc = Document()
     section = doc.sections[0]
@@ -366,47 +365,34 @@ def main():
     )
 
     add_heading(doc, "Differences in multivariate composition")
+    beach_test = exact_permanova.loc[exact_permanova["term"] == "beach"].iloc[0]
+    campaign_test = exact_permanova.loc[exact_permanova["term"] == "campaign"].iloc[0]
     add_body(
         doc,
-        "The one-factor PERMANOVA detected a difference in composition between "
-        "beaches (pseudo-F = 3.548, p = 0.0085), whereas the season-only test "
-        "was not significant (pseudo-F = 1.195, p = 0.2744). PERMDISP did not "
-        "detect differences in multivariate dispersion for beach (F = 0.309, "
-        "p = 0.5623) or season (F = 0.891, p = 0.3441). In the factorial "
-        "PERMANOVA, beach was significant (pseudo-F = 4.929, R² = 0.139, "
-        "p = 0.0020), season was marginal but not significant at α = 0.05 "
-        "(pseudo-F = 1.798, R² = 0.152, p = 0.0523), and the beach × season "
-        "interaction was significant (pseudo-F = 3.058, R² = 0.258, "
-        "p = 0.0014) (Table F).",
+        "For inferential analysis, the three transects within each beach-campaign "
+        "combination were aggregated, producing eight independent units of 150 m². "
+        f"The exact blocked PERMANOVA beach contrast yielded pseudo-F = "
+        f"{beach_test['pseudo_f']:.3f}, partial R² = "
+        f"{beach_test['partial_r_squared']:.3f}, and p = "
+        f"{beach_test['p_value']:.4f}, based on "
+        f"{int(beach_test['exact_permutations'])} possible within-campaign "
+        "allocations. The campaign term, controlling for beach, yielded "
+        f"pseudo-F = {campaign_test['pseudo_f']:.3f}, partial R² = "
+        f"{campaign_test['partial_r_squared']:.3f}, and p = "
+        f"{campaign_test['p_value']:.4f}. Because only one annual cycle was "
+        "sampled, this term describes differences among the four campaign dates "
+        "and is not interpreted as a general seasonal effect. The beach × "
+        "campaign interaction was not tested because the aggregated design has "
+        "one observation per cell and zero residual degrees of freedom (Table F).",
     )
     rows = []
-    for _, r in one_factor.iterrows():
+    for _, r in exact_permanova.iterrows():
         rows.append(
             {
-                "Analysis": "PERMANOVA",
-                "Term": r["factor"].title(),
+                "Analysis": "Exact blocked PERMANOVA",
+                "Term": r["term"].title(),
                 "Statistic": f"pseudo-F = {r['pseudo_f']:.3f}",
-                "R²": "—",
-                "p": f"{r['p_value']:.4f}",
-            }
-        )
-    for _, r in dispersion.iterrows():
-        rows.append(
-            {
-                "Analysis": "PERMDISP",
-                "Term": r["factor"].title(),
-                "Statistic": f"F = {r['f_value']:.3f}",
-                "R²": "—",
-                "p": f"{r['p_value']:.4f}",
-            }
-        )
-    for _, r in factorial.iterrows():
-        rows.append(
-            {
-                "Analysis": "Factorial PERMANOVA",
-                "Term": r["term"].replace(":", " × ").title(),
-                "Statistic": f"pseudo-F = {r['pseudo_f']:.3f}",
-                "R²": f"{r['r_squared']:.3f}",
+                "R²": f"{r['partial_r_squared']:.3f}",
                 "p": f"{r['p_value']:.4f}",
             }
         )
@@ -414,8 +400,10 @@ def main():
     caption(
         doc,
         "Table F",
-        "Multivariate tests of marine-litter composition. All permutation tests "
-        "used 9,999 permutations.",
+        "Exact restricted multivariate tests of marine-litter composition using "
+        "eight aggregated beach-campaign units. R² values are partial effect "
+        "sizes. The interaction was not tested because it has no residual degrees "
+        "of freedom.",
     )
     add_dataframe_table(
         doc,
