@@ -12,14 +12,15 @@ structure is two beaches × four seasons × three transects, for 24 observations
 | `expanded_polystyrene` | Count of expanded-polystyrene items | Non-negative integer |
 | `rubber` | Count of rubber items | Non-negative integer |
 | `glass` | Count of glass items | Non-negative integer |
-| `fragments` | Count of fragments | Non-negative integer |
+| `rubber_fragments` | Count of rubber fragments (rubber category of the field sheet) | Non-negative integer |
 | `fabric` | Count of fabric items | Non-negative integer |
 | `processed_wood` | Count of processed-wood items | Non-negative integer |
 | `unidentified` | Count of unidentified items | Non-negative integer |
 | `personal_care` | Count of personal-care items | Non-negative integer |
 | `aluminium` | Count of aluminium items | Non-negative integer |
 | `aerosol` | Count of aerosol items | Non-negative integer |
-| `rings_caps` | Count of rings and caps | Non-negative integer |
+| `rings_caps` | Count of metal rings and caps | Non-negative integer |
+| `metal_fragments` | Count of metal fragments | Non-negative integer |
 | `total_items` | Sum of all item categories for the transect | Derived integer |
 
 ## Translation rule

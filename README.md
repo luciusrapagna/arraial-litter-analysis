@@ -51,8 +51,11 @@ In VS Code, the same commands are available through **Terminal → Run Task**:
 - Composition tables by beach and season.
 - Hellinger PCA for compositional structure.
 - Exploratory K-means comparison using silhouette scores.
-- Bray–Curtis PERMANOVA with 9,999 permutations.
-- PERMDISP diagnostics before interpreting PERMANOVA.
+- Bray–Curtis PERMANOVA on eight aggregated beach–campaign units.
+- Exact restricted permutations: beach labels are swapped within campaigns and
+  campaign labels are permuted within beaches.
+- No beach × campaign interaction test because the aggregated design has zero
+  residual degrees of freedom.
 - Publication figures exported as PNG and PDF.
 
 The PCA figure follows a persistent publication style with group ellipses,
@@ -63,6 +66,23 @@ The K-means figure is likewise regenerated in English with cluster-specific
 colors and marker shapes, short sample labels, 68% confidence ellipses when
 estimable, and enlarged cluster centroids. The accompanying PCA-score table
 maps each short label to its beach, season, and transect.
+
+## Version history
+
+- **1.1.1 (2026-11-26)** — Same data and results as 1.1.0. The Zenodo
+  archive of 1.1.0 (10.5281/zenodo.24541764) included two files unrelated to
+  the dataset by mistake and was withdrawn; 1.1.1 replaces it.
+- **1.1.0 (2026-11-25)** — Corrected official workbook (AD-007): Ilha do Pontal
+  campaign labels fixed (they had been reversed), 29 omitted metal fragments
+  added (2,950 items in total), and the `fragments` column renamed
+  `rubber_fragments`. All outputs regenerated. Heatmap labels and CCI threshold
+  labels corrected; the sampling-design schematic now shows the 15 contiguous
+  sectors and the random selection of three per campaign. The transect-level
+  PERMDISP is no longer reported. `scripts/03_build_results_section.py` and
+  `scripts/05_build_response_letter.py` are drafting helpers from version
+  1.0.0 with hard-coded text; they were not updated and their outputs are not
+  part of this release.
+- **1.0.0 (2026-07-23)** — First archived release.
 
 ## Reproducibility rule
 
@@ -78,13 +98,17 @@ and CCI use 50 m² per transect, as documented in
 ## Citation and license
 
 Citation metadata are available in `CITATION.cff`, and Zenodo metadata are in
-`.zenodo.json`. The archived dataset is available at
-[https://doi.org/10.5281/zenodo.21511162](https://doi.org/10.5281/zenodo.21511162).
+`.zenodo.json`. The current archived version (1.1.1) is available at
+[https://doi.org/10.5281/zenodo.24558705](https://doi.org/10.5281/zenodo.24558705).
+All versions are grouped under the concept DOI
+[10.5281/zenodo.21511161](https://doi.org/10.5281/zenodo.21511161). Version 1.0.0
+(10.5281/zenodo.21511162) contains the uncorrected workbook and should not be
+used for new analyses.
 
 Suggested citation:
 
 > Rapagnã, L. (2026). *Marine litter abundance and composition in Arraial do
-> Cabo, Brazil* (Version 1.0.0) [Dataset]. Zenodo.
-> https://doi.org/10.5281/zenodo.21511162
+> Cabo, Brazil* (Version 1.1.1) [Dataset]. Zenodo.
+> https://doi.org/10.5281/zenodo.24558705
 
 The repository is released under CC BY 4.0; see `LICENSES.md`.

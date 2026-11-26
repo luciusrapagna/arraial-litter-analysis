@@ -22,14 +22,16 @@
   ],
   "related_identifiers": [
     {
-      "identifier": "10.5281/zenodo.21511162",
-      "relation": "isIdenticalTo",
-      "scheme": "doi"
-    },
-    {
       "identifier": "https://github.com/luciusrapagna/arraial-litter-analysis",
       "relation": "isSupplementTo",
       "scheme": "url"
+    },
+    {
+      "identifier": "10.5281/zenodo.21511162",
+      "relation": "isNewVersionOf",
+      "scheme": "doi"
     }
-  ]
+  ],
+  "version": "1.1.1",
+  "notes": "Version 1.1.0 corrects the official workbook after a cell-by-cell check against the original field tally sheets: (1) the campaign labels of Ilha do Pontal had been reversed (field order winter, autumn, spring, summer read as summer, spring, autumn, winter); (2) 29 metal fragments recorded at Praia Brava had been omitted and are now included (2,950 items in total); (3) the column previously named \"fragments\" is the rubber-fragment class of the field sheet and is now named rubber_fragments. All tables, figures and statistics were regenerated. The superseded workbook is kept in data/raw/superseded/. See docs/analysis_decisions.md (AD-007). Version 1.1.1 has the same data and results as 1.1.0; it removes two files that had been included in the 1.1.0 archive by mistake (a manuscript-review document and the script that generated it)."
 }

@@ -5,3 +5,8 @@ __pycache__/
 *.py[cod]
 .DS_Store
 .vscode/settings.json
+
+# Local release archives and manuscript-review material (not public)
+release/
+outputs/Response_to_Reviewers*.docx
+scripts/05_build_response_letter.py
