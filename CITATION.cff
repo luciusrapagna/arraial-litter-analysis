@@ -15,9 +15,9 @@ keywords:
   - coastal upwelling
   - Arraial do Cabo
   - Brazil
-version: 1.1.0
-date-released: 2026-11-25
-doi: "10.5281/zenodo.24541764"
+version: 1.1.1
+date-released: 2026-11-26
+doi: "10.5281/zenodo.24558705"
 identifiers:
   - type: doi
     value: "10.5281/zenodo.21511161"

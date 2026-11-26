@@ -69,6 +69,9 @@ maps each short label to its beach, season, and transect.
 
 ## Version history
 
+- **1.1.1 (2026-11-26)** — Same data and results as 1.1.0. The Zenodo
+  archive of 1.1.0 (10.5281/zenodo.24541764) included two files unrelated to
+  the dataset by mistake and was withdrawn; 1.1.1 replaces it.
 - **1.1.0 (2026-11-25)** — Corrected official workbook (AD-007): Ilha do Pontal
   campaign labels fixed (they had been reversed), 29 omitted metal fragments
   added (2,950 items in total), and the `fragments` column renamed
@@ -95,8 +98,8 @@ and CCI use 50 m² per transect, as documented in
 ## Citation and license
 
 Citation metadata are available in `CITATION.cff`, and Zenodo metadata are in
-`.zenodo.json`. The current archived version (1.1.0) is available at
-[https://doi.org/10.5281/zenodo.24541764](https://doi.org/10.5281/zenodo.24541764).
+`.zenodo.json`. The current archived version (1.1.1) is available at
+[https://doi.org/10.5281/zenodo.24558705](https://doi.org/10.5281/zenodo.24558705).
 All versions are grouped under the concept DOI
 [10.5281/zenodo.21511161](https://doi.org/10.5281/zenodo.21511161). Version 1.0.0
 (10.5281/zenodo.21511162) contains the uncorrected workbook and should not be
@@ -105,7 +108,7 @@ used for new analyses.
 Suggested citation:
 
 > Rapagnã, L. (2026). *Marine litter abundance and composition in Arraial do
-> Cabo, Brazil* (Version 1.1.0) [Dataset]. Zenodo.
-> https://doi.org/10.5281/zenodo.24541764
+> Cabo, Brazil* (Version 1.1.1) [Dataset]. Zenodo.
+> https://doi.org/10.5281/zenodo.24558705
 
 The repository is released under CC BY 4.0; see `LICENSES.md`.
